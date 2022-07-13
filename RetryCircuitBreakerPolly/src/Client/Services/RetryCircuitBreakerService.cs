@@ -1,48 +1,55 @@
-﻿using Polly;
+﻿using Client.Configurations;
+using Microsoft.Extensions.Options;
+using Polly;
 using Polly.Wrap;
 using System;
-using System.Net.Http;
-using System.Threading.Tasks;
 
 namespace Client.Services
 {
     public class RetryCircuitBreakerService : IRetryCircuitBreakerService
     {
+        private readonly PollyOptions _pollyOptions;
+
+        public RetryCircuitBreakerService(IOptions<PollyOptions> pollyOptions)
+        {
+            _pollyOptions = pollyOptions.Value;
+        }
 
         public AsyncPolicyWrap CreatePolicyManager()
         {
            return Policy.WrapAsync(WaitAndRetry(), CircuitBreaker());
         }
 
-        public IAsyncPolicy WaitAndRetry()
+        private IAsyncPolicy WaitAndRetry()
         {
             return Policy
-               .Handle<HttpRequestException>()
-               .WaitAndRetryAsync(sleepDurations: new[]
-               {
-                    TimeSpan.FromSeconds(1),
-                    TimeSpan.FromSeconds(5),
-                    TimeSpan.FromSeconds(10)
-               }, onRetry: (outcomeType, timespan, retryCount, context) =>
+               .Handle<Exception>()
+               .WaitAndRetryAsync(
+                retryCount: _pollyOptions.RetryCount,
+                retryAttempt => TimeSpan.FromSeconds(_pollyOptions.RetrySleepInSeconds),
+                onRetry: (outcomeType, timespan, retryCount, context) =>
                {
                    Console.ForegroundColor = ConsoleColor.Blue;
                    Console.WriteLine($"Trying for the {retryCount} time!");
+                   Console.WriteLine();
+                   Console.WriteLine($"Retrying one more time for correlationId '{context.CorrelationId}', after {timespan}. Current retry count {retryCount}");
                    Console.ForegroundColor = ConsoleColor.White;
                });
         }
 
 
 
-        public IAsyncPolicy CircuitBreaker()
+        private IAsyncPolicy CircuitBreaker()
         {
             return Policy
               .Handle<Exception>()
               .CircuitBreakerAsync(
-                    exceptionsAllowedBeforeBreaking: 4,
-                    durationOfBreak: TimeSpan.FromSeconds(3),
+                    exceptionsAllowedBeforeBreaking: _pollyOptions.ExceptionsAllowedBeforeBreaking,
+                    durationOfBreak: TimeSpan.FromSeconds(_pollyOptions.DurationOfBreakInSeconds),
                     onBreak: (ex, breakDelay) =>
                     {
                         Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine("Circuit breaker opened");
                         Console.WriteLine(".Breaker logging: Breaking the circuit for " + breakDelay.TotalMilliseconds + "ms!", ConsoleColor.Magenta);
                         Console.WriteLine("..due to: " + ex.Message, ConsoleColor.Magenta);
                     },

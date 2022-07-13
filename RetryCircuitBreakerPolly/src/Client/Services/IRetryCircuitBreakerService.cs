@@ -8,7 +8,7 @@ namespace Client.Services
     public interface IRetryCircuitBreakerService
     {
         public AsyncPolicyWrap CreatePolicyManager();
-        public IAsyncPolicy WaitAndRetry();
-        public IAsyncPolicy CircuitBreaker();
+        //public IAsyncPolicy WaitAndRetry();
+        //public IAsyncPolicy CircuitBreaker();
     }
 }

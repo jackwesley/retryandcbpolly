@@ -1,3 +1,4 @@
+using Client.Configurations;
 using Client.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,6 +33,8 @@ namespace Client
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "Client", Version = "v1" });
             });
+
+            services.Configure<PollyOptions>(Configuration.GetSection(PollyOptions.PollyOptionSection));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
