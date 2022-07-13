@@ -13,7 +13,8 @@ namespace Client.Services
         private readonly AsyncPolicyWrap _pollyService;
         public MusicService(HttpClient httpClient, IRetryCircuitBreakerService cbService)
         {
-            httpClient.BaseAddress = new Uri("https://httpstat.us/500");
+            //httpClient.BaseAddress = new Uri("https://httpstat.us/500");
+            httpClient.BaseAddress = new Uri("https://localhost:5002/music/");
             _httpClient = httpClient;
             _pollyService = cbService.CreatePolicyManager();
 
@@ -21,7 +22,7 @@ namespace Client.Services
         public async Task<List<Music>> GetGoodSongs()
         {
             var response = await _pollyService.ExecuteAsync(
-                    async() => await _httpClient.GetAsync("")
+                    async() => await _httpClient.GetAsync("good-songs")
                 );
 
             TratarErrosResponse(response);
