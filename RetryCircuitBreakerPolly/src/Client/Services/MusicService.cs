@@ -14,7 +14,7 @@ namespace Client.Services
         private readonly IRetryCircuitBreakerService _cbService;
         public MusicService(HttpClient httpClient, IRetryCircuitBreakerService cbService)
         {
-            httpClient.BaseAddress = new Uri("https://localhost:44385/");
+            httpClient.BaseAddress = new Uri("https://httpstat.us/500");
             _httpClient = httpClient;
             _cbService = cbService;
 
@@ -22,7 +22,7 @@ namespace Client.Services
         public async Task<List<Music>> GetGoodSongs()
         {
             var policyManager = _cbService.CreatePolicyManager();
-            var response = await policyManager.ExecuteAsync(async () => await _httpClient.GetAsync("music/good-songs"));
+            var response = await policyManager.ExecuteAsync(async () => await _httpClient.GetAsync(""));
 
             TratarErrosResponse(response);
             return await Deserialize<List<Music>>(response);
