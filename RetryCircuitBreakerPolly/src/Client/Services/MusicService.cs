@@ -21,12 +21,20 @@ namespace Client.Services
         }
         public async Task<List<Music>> GetGoodSongs()
         {
-            var response = await _pollyService.ExecuteAsync(
-                    async() => await _httpClient.GetAsync("good-songs")
+            try
+            {
+                var response = await _pollyService.ExecuteAsync(
+                    async () => await _httpClient.GetAsync("good-songs")
                 );
 
-            TratarErrosResponse(response);
-            return await Deserialize<List<Music>>(response);
+                TratarErrosResponse(response);
+                return await Deserialize<List<Music>>(response);
+            }
+            catch (Exception ex)
+            {
+
+                return null;
+            }            
         }
     }
 }

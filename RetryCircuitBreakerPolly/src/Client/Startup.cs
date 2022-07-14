@@ -23,7 +23,7 @@ namespace Client
         {
             services.AddHttpClient<IMusicService, MusicService>();
 
-            services.AddTransient<IRetryCircuitBreakerService, RetryCircuitBreakerService>();
+            services.AddSingleton<IRetryCircuitBreakerService, RetryCircuitBreakerService>();
 
             services.AddControllers()
                 .AddNewtonsoftJson(options =>
